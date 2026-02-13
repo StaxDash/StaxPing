@@ -7,15 +7,27 @@
 //
 // Full license text available in LICENSE and EULA.md.
 
-mod config;
-mod first_run;
-mod dns;
-mod ping;
-mod http;
-mod trace;
+// --- Platform Routing --------------------------------------------------------
+
+mod linux;
+mod windows;
+mod shared;
+
+#[cfg(target_os = "linux")]
+use linux as platform;
+
+#[cfg(target_os = "windows")]
+use windows as platform;
+
+// --- Shared Modules ----------------------------------------------------------
+
+use shared::config::Config;
+use shared::first_run::run_first_run;
+use shared::http;
+
+// --- CLI ---------------------------------------------------------------------
 
 use clap::Parser;
-use config::Config;
 
 /// Simple aligned key/value printer
 fn kv(label: &str, value: impl std::fmt::Display) {
@@ -58,6 +70,8 @@ struct Cli {
     advanced: bool,
 }
 
+// --- Main --------------------------------------------------------------------
+
 #[tokio::main]
 async fn main() {
     // Load config
@@ -66,12 +80,12 @@ async fn main() {
     match config {
         Some(cfg) => {
             if cfg.needs_first_run() {
-                first_run::run_first_run();
+                run_initial_setup();
                 return;
             }
         }
         None => {
-            first_run::run_first_run();
+            run_initial_setup();
             return;
         }
     }
@@ -98,10 +112,11 @@ async fn main() {
     println!("  Target: {}", target);
     println!("========================================\n");
 
-    // DNS Section
+    // --- DNS -----------------------------------------------------------------
+
     println!("=== DNS ===============================");
 
-    let dns_result = match dns::resolve_domain(&target).await {
+    let dns_result = match platform::dns::resolve_domain(&target).await {
         Ok(result) => {
             if !result.ipv4.is_empty() {
                 kv("IPv4:", format!("{:?}", result.ipv4));
@@ -128,10 +143,11 @@ async fn main() {
         return;
     };
 
-    // Ping Section
+    // --- Ping ----------------------------------------------------------------
+
     println!("\n=== Ping ==============================");
 
-    match ping::run_ping(&ping_ip).await {
+    match platform::ping::run_ping(&ping_ip).await {
         Ok(result) => {
             kv("Sent:", result.sent);
             kv("Received:", result.received);
@@ -145,7 +161,8 @@ async fn main() {
         }
     }
 
-    // HTTP Section
+    // --- HTTP ----------------------------------------------------------------
+
     println!("\n=== HTTP ==============================");
 
     match http::check_http(&target).await {
@@ -159,11 +176,11 @@ async fn main() {
         }
     }
 
-    // Traceroute Section
+    // --- Traceroute ----------------------------------------------------------
+
     if cli.trace {
         println!("\n=== Traceroute ========================");
 
-        // Use the first IPv4 for traceroute
         let trace_ip = if !dns_result.ipv4.is_empty() {
             dns_result.ipv4[0].clone()
         } else if !dns_result.ipv6.is_empty() {
@@ -173,7 +190,7 @@ async fn main() {
             return;
         };
 
-        match trace::run_trace(&trace_ip).await {
+        match platform::trace::run_trace(&trace_ip).await {
             Ok(result) => {
                 for hop in result.hops {
                     let times: Vec<String> = hop.times_ms.iter()
@@ -197,4 +214,25 @@ async fn main() {
     if cli.advanced {
         println!("\n(advanced mode enabled)");
     }
+}
+
+// --- First Run Wrapper -------------------------------------------------------
+
+fn run_initial_setup() {
+    let os = if cfg!(target_os = "linux") {
+        "linux"
+    } else if cfg!(target_os = "windows") {
+        "windows"
+    } else if cfg!(target_os = "macos") {
+        "macos"
+    } else {
+        "unknown"
+    };
+
+    let icmp = platform::capabilities::check_icmp_support();
+    let trace = platform::capabilities::check_trace_support();
+    let dns = platform::capabilities::check_dns_support();
+    let http = platform::capabilities::check_http_support();
+
+    run_first_run(os, icmp, trace, dns, http);
 }

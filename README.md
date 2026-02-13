@@ -71,6 +71,36 @@ staxping --help
 
 ---
 
+## **Mock**
+
+```bash
+~ ❯ staxping example.com
+========================================
+  StaxPing v0.1.0 — Network Diagnostics
+  Target: example.com
+========================================
+
+=== DNS ===============================
+  IPv4:        ["93.184.216.34"]
+  IPv6:        ["2606:2800:220:1:248:1893:25c8:1946"]
+  Lookup:      20 ms
+
+=== Ping ==============================
+  Sent:        4
+  Received:    4
+  Loss:        0.0%
+  Min:         20.10 ms
+  Avg:         22.45 ms
+  Max:         24.89 ms
+
+=== HTTP ==============================
+  Status:      200
+  Time:        380 ms
+   Final URL:   https://example.com/
+   
+```
+---
+
 ## **Installation**
 
 ### **Linux (Primary Target)**  
