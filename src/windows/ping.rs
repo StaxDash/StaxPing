@@ -7,11 +7,14 @@
 //
 // Full license text available in LICENSE and EULA.md.
 
-use surge_ping::{Client, Config, PingIdentifier, PingSequence};
-use std::net::IpAddr;
-use std::time::{Duration, Instant};
-use rand::Rng;
-use tokio::process::Command;
+// Windows-native ICMP ping implementation
+use windows::Win32::NetworkManagement::IpHelper::{
+    IcmpCreateFile, IcmpSendEcho, IcmpCloseHandle, ICMP_ECHO_REPLY, IP_OPTION_INFORMATION,
+};
+use windows::Win32::Foundation::HANDLE;
+use std::ffi::c_void;
+use std::mem::size_of;
+use std::time::Instant;
 
 pub struct PingResult {
     pub sent: u32,
@@ -23,106 +26,78 @@ pub struct PingResult {
 }
 
 pub async fn run_ping(ip: &str) -> Result<PingResult, String> {
-    // Try surge-ping first
-    match run_raw_ping(ip).await {
-        Ok(result) => return Ok(result),
-        Err(e) => {
-            if e.contains("Operation not permitted") {
-                // Fall back to /bin/ping
-                return run_fallback_ping(ip).await;
-            } else {
-                return Err(e);
-            }
-        }
+    // Create ICMP handle
+    let handle = unsafe { IcmpCreateFile() }
+        .map_err(|e| format!("Failed to create ICMP handle: {}", e))?;
+
+    if handle.is_invalid() {
+        return Err("ICMP handle is invalid".into());
     }
-}
 
-async fn run_raw_ping(ip: &str) -> Result<PingResult, String> {
-    let ip: IpAddr = ip.parse().map_err(|_| format!("Invalid IP address: {}", ip))?;
-
-    let client = Client::new(&Config::default())
-        .map_err(|e| format!("Ping client init failed: {}", e))?;
-
-    let identifier = PingIdentifier(rand::thread_rng().gen());
-    let mut sequence = PingSequence(0);
-
-    let mut pinger = client.pinger(ip, identifier).await;
-
+    let sent = 4;
+    let mut received = 0;
     let mut times = Vec::new();
-    let mut received = 0u32;
-    let sent = 4u32;
 
     for _ in 0..sent {
         let start = Instant::now();
 
-        let payload = b"staxping";
-        let result = pinger.ping(sequence, payload).await;
-        sequence.0 += 1;
-
-        match result {
-            Ok((_packet, _addr)) => {
+        match send_single_ping(handle, ip) {
+            Ok(true) => {
                 received += 1;
                 let elapsed = start.elapsed().as_secs_f64() * 1000.0;
                 times.push(elapsed);
             }
-            Err(_) => {}
+            Ok(false) => {
+                // timeout or unreachable
+            }
+            Err(e) => {
+                unsafe { IcmpCloseHandle(handle).ok(); }
+                return Err(e);
+            }
         }
 
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
     }
+
+    unsafe { IcmpCloseHandle(handle).ok(); }
 
     Ok(calculate_stats(sent, received, times))
 }
 
-async fn run_fallback_ping(ip: &str) -> Result<PingResult, String> {
-    let output = Command::new("/bin/ping")
-        .arg("-c")
-        .arg("4")
-        .arg(ip)
-        .output()
-        .await
-        .map_err(|e| format!("Failed to run /bin/ping: {}", e))?;
+fn send_single_ping(handle: HANDLE, ip: &str) -> Result<bool, String> {
+    let ipv4 = ip
+        .parse::<std::net::Ipv4Addr>()
+        .map_err(|_| format!("Invalid IPv4 address: {}", ip))?;
 
-    let stdout = String::from_utf8_lossy(&output.stdout);
+    let addr = u32::from_ne_bytes(ipv4.octets());
 
-    parse_ping_output(&stdout)
-}
+    let payload = b"staxping";
+    let mut reply_buf = vec![0u8; size_of::<ICMP_ECHO_REPLY>() + payload.len() + 8];
 
-fn parse_ping_output(output: &str) -> Result<PingResult, String> {
-    let mut sent = 4;
-    let mut received = 0;
-    let mut min = 0.0;
-    let mut avg = 0.0;
-    let mut max = 0.0;
+    // Default TTL = 128
+    let mut options = IP_OPTION_INFORMATION {
+        Ttl: 128,
+        ..Default::default()
+    };
 
-    for line in output.lines() {
-        if line.contains("packets transmitted") {
-            // Example: "4 packets transmitted, 4 received, 0% packet loss"
-            let parts: Vec<&str> = line.split(',').collect();
-            sent = parts[0].trim().split(' ').next().unwrap().parse().unwrap_or(4);
-            received = parts[1].trim().split(' ').next().unwrap().parse().unwrap_or(0);
-        }
+    let result = unsafe {
+        IcmpSendEcho(
+            handle,
+            addr,
+            payload.as_ptr() as *const c_void,
+            payload.len() as u16,
+            Some(&mut options),
+            reply_buf.as_mut_ptr() as *mut c_void,
+            reply_buf.len() as u32,
+            2000, // timeout ms
+        )
+    };
 
-        if line.contains("min/avg/max") {
-            // Example: "rtt min/avg/max/mdev = 12.345/14.567/16.789/0.123 ms"
-            let stats = line.split('=').nth(1).unwrap().trim();
-            let values: Vec<&str> = stats.split('/').collect();
-            min = values[0].parse().unwrap_or(0.0);
-            avg = values[1].parse().unwrap_or(0.0);
-            max = values[2].parse().unwrap_or(0.0);
-        }
+    if result == 0 {
+        return Ok(false);
     }
 
-    let loss = ((sent - received) as f32 / sent as f32) * 100.0;
-
-    Ok(PingResult {
-        sent,
-        received,
-        loss,
-        min_ms: min,
-        avg_ms: avg,
-        max_ms: max,
-    })
+    Ok(true)
 }
 
 fn calculate_stats(sent: u32, received: u32, times: Vec<f64>) -> PingResult {

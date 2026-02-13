@@ -7,6 +7,8 @@
 //
 // Full license text available in LICENSE and EULA.md.
 
+// Windows DNS resolver using Win32 API
+
 use trust_dns_resolver::{
     TokioAsyncResolver,
     name_server::{GenericConnector, TokioRuntimeProvider},
@@ -23,7 +25,7 @@ pub async fn resolve_domain(domain: &str) -> Result<DnsResult, String> {
     // Build the required connector
     let connector = GenericConnector::new(TokioRuntimeProvider::default());
 
-    // Correct constructor for trust-dns-resolver
+    // Construct resolver from system configuration
     let resolver = TokioAsyncResolver::from_system_conf(connector)
         .map_err(|e| format!("Resolver init failed: {}", e))?;
 

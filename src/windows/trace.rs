@@ -7,7 +7,16 @@
 //
 // Full license text available in LICENSE and EULA.md.
 
-use tokio::process::Command;
+// Windows-native traceroute using ICMP Echo with TTL stepping
+
+use windows::Win32::NetworkManagement::IpHelper::{
+    IcmpCreateFile, IcmpSendEcho, IcmpCloseHandle, ICMP_ECHO_REPLY, IP_OPTION_INFORMATION,
+};
+use windows::Win32::Foundation::HANDLE;
+
+use std::ffi::c_void;
+use std::mem::size_of;
+use std::time::Instant;
 
 #[derive(Debug, Clone)]
 pub struct TraceHop {
@@ -23,146 +32,90 @@ pub struct TraceResult {
 }
 
 pub async fn run_trace(target: &str) -> Result<TraceResult, String> {
-    // Try system traceroute first
-    let traceroute_path = if std::path::Path::new("/usr/bin/traceroute").exists() {
-        "/usr/bin/traceroute"
-    } else if std::path::Path::new("/bin/traceroute").exists() {
-        "/bin/traceroute"
-    } else {
-        // Fallback to pure Rust traceroute
-        return run_trace_fallback(target).await;
-    };
+    // Create ICMP handle
+    let handle = unsafe { IcmpCreateFile() }
+        .map_err(|e| format!("Failed to create ICMP handle: {}", e))?;
 
-    let output = Command::new(traceroute_path)
-        .arg("-n")
-        .arg("-w")
-        .arg("2")
-        .arg(target)
-        .output()
-        .await
-        .map_err(|e| format!("Failed to run traceroute: {}", e))?;
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-
-    parse_traceroute(&stdout)
-}
-
-fn parse_traceroute(output: &str) -> Result<TraceResult, String> {
-    let mut hops = Vec::new();
-
-    for line in output.lines() {
-        // Skip header line
-        if line.starts_with("traceroute") {
-            continue;
-        }
-
-        // Example hop line:
-        // 1  192.168.1.1  1.234 ms  1.567 ms  1.890 ms
-        let parts: Vec<&str> = line.split_whitespace().collect();
-        if parts.len() < 2 {
-            continue;
-        }
-
-        let hop_num = parts[0].parse::<u32>().unwrap_or(0);
-        let ip = parts[1].to_string();
-
-        let mut times = Vec::new();
-        for part in parts.iter().skip(2) {
-            if part.ends_with("ms") {
-                let clean = part.replace("ms", "");
-                if let Ok(val) = clean.parse::<f64>() {
-                    times.push(val);
-                }
-            }
-        }
-
-        hops.push(TraceHop {
-            hop: hop_num,
-            host: ip.clone(),
-            ip,
-            times_ms: times,
-        });
+    if handle.is_invalid() {
+        return Err("ICMP handle is invalid".into());
     }
 
-    Ok(TraceResult { hops })
-}
+    // Parse IPv4 address
+    let ipv4 = target
+        .parse::<std::net::Ipv4Addr>()
+        .map_err(|_| format!("Invalid IPv4 address: {}", target))?;
 
-use socket2::{Socket, Domain, Type, Protocol};
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::time::Instant;
-use tokio::time::{timeout, Duration};
-
-async fn run_trace_fallback(target: &str) -> Result<TraceResult, String> {
-    let dest_ip: IpAddr = target
-        .parse()
-        .map_err(|_| format!("Invalid IP address for traceroute: {}", target))?;
-
-    let max_hops = 30;
-    let timeout_ms = 2000;
+    let dest_ip = u32::from_ne_bytes(ipv4.octets());
 
     let mut hops = Vec::new();
+    let max_hops = 30;
 
     for ttl in 1..=max_hops {
-        let hop = trace_single_hop(dest_ip, ttl, timeout_ms).await?;
-
-        // detects blocked ICMP responses
-        if ttl == 1 && hop.ip == "*" {
-            return Err("Traceroute requires elevated privileges in this environment".into());
-        }
+        let hop = send_trace_hop(handle, dest_ip, ttl)?;
 
         hops.push(hop.clone());
 
-        if hop.ip == dest_ip.to_string() {
+        // Stop if we reached the destination
+        if hop.ip == target {
             break;
         }
+
+        tokio::time::sleep(std::time::Duration::from_millis(300)).await;
     }
+
+    unsafe { IcmpCloseHandle(handle).ok(); }
 
     Ok(TraceResult { hops })
 }
 
-async fn trace_single_hop(dest: IpAddr, ttl: u32, timeout_ms: u64) -> Result<TraceHop, String> {
-    let udp_socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))
-        .map_err(|e| format!("Socket error: {}", e))?;
+fn send_trace_hop(handle: HANDLE, dest_ip: u32, ttl: u32) -> Result<TraceHop, String> {
+    let payload = b"staxping";
+    let mut reply_buf = vec![0u8; size_of::<ICMP_ECHO_REPLY>() + payload.len() + 8];
 
-    udp_socket.set_ttl(ttl)
-        .map_err(|e| format!("Failed to set TTL: {}", e))?;
-
-    let local_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0);
-    udp_socket.bind(&local_addr.into())
-        .map_err(|e| format!("Bind error: {}", e))?;
-
-    let dest_addr = SocketAddr::new(dest, 33434 + ttl as u16);
+    // TTL stepping
+    let mut options = IP_OPTION_INFORMATION {
+        Ttl: ttl as u8,
+        ..Default::default()
+    };
 
     let start = Instant::now();
-    udp_socket.send_to(&[0u8], &dest_addr.into())
-        .map_err(|e| format!("Send error: {}", e))?;
 
-    // Allocate MaybeUninit buffer on heap
-    let mut buf = Box::new([std::mem::MaybeUninit::<u8>::uninit(); 512]);
-
-    let socket_clone = udp_socket.try_clone()
-        .map_err(|e| format!("Socket clone error: {}", e))?;
-
-    let recv_future = tokio::task::spawn_blocking(move || {
-        socket_clone.recv_from(&mut *buf)
-    });
-
-    let result = timeout(Duration::from_millis(timeout_ms), recv_future).await;
+    let result = unsafe {
+        IcmpSendEcho(
+            handle,
+            dest_ip,
+            payload.as_ptr() as *const c_void,
+            payload.len() as u16,
+            Some(&mut options),
+            reply_buf.as_mut_ptr() as *mut c_void,
+            reply_buf.len() as u32,
+            2000, // timeout
+        )
+    };
 
     let elapsed = start.elapsed().as_secs_f64() * 1000.0;
 
-    let (ip, times_ms) = match result {
-        Ok(Ok(Ok((_size, addr)))) => {
-            let ip = addr.as_socket().unwrap().ip().to_string();
-            (ip, vec![elapsed])
-        }
-        _ => ("*".into(), vec![elapsed]),
-    };
+    if result == 0 {
+        // timeout or unreachable
+        return Ok(TraceHop {
+            hop: ttl,
+            host: "*".into(),
+            ip: "*".into(),
+            times_ms: vec![elapsed],
+        });
+    }
+
+    // Extract reply
+    let reply: &ICMP_ECHO_REPLY =
+        unsafe { &*(reply_buf.as_ptr() as *const ICMP_ECHO_REPLY) };
+
+    let addr = reply.Address.to_ne_bytes();
+    let ip = format!("{}.{}.{}.{}", addr[0], addr[1], addr[2], addr[3]);
 
     Ok(TraceHop {
         hop: ttl,
         host: ip.clone(),
         ip,
-        times_ms,
+        times_ms: vec![elapsed],
     })
 }

@@ -8,9 +8,17 @@
 // Full license text available in LICENSE and EULA.md.
 
 use std::io::{self, Write};
-use crate::config::Config;
+use super::config::Config;
 
-pub fn run_first_run() {
+/// Runs the first‑run setup flow.
+/// Capability flags are passed in from main.rs (platform‑specific).
+pub fn run_first_run(
+    os: &str,
+    icmp: bool,
+    trace: bool,
+    dns: bool,
+    http: bool,
+) {
     println!("=== StaxPing ===");
     println!("a product of StaxDash | life made simple\n");
 
@@ -22,22 +30,14 @@ pub fn run_first_run() {
 
     println!("\nPerforming initial setup...");
 
-    let os = detect_os();
     println!("• Detecting OS: {}", os);
-
-    let icmp = check_icmp_support();
     println!("• Checking ICMP support: {}", yes_no(icmp));
-
-    let trace = check_trace_support();
     println!("• Checking traceroute capability: {}", yes_no(trace));
-
-    let dns = check_dns_support();
     println!("• Checking DNS resolver: {}", yes_no(dns));
-
-    let http = check_http_support();
     println!("• Checking HTTP client: {}", yes_no(http));
 
-    let config = Config::new_after_first_run(&os, icmp, trace, dns, http);
+    let config = Config::new_after_first_run(os, icmp, trace, dns, http);
+
     if let Err(e) = config.save() {
         println!("Failed to save config: {}", e);
         std::process::exit(1);
@@ -46,9 +46,10 @@ pub fn run_first_run() {
     println!("\nSetup complete. You can now use StaxPing normally.");
 }
 
-/// Display the EULA text (loaded from EULA.txt)
+/// Display the EULA text (loaded from repo root)
 fn show_eula() {
-    let eula_text = include_str!("../EULA.txt");
+    // Adjusted path: shared/first_run.rs → ../../EULA.txt
+    let eula_text = include_str!("../../EULA.txt");
     println!("{}", eula_text);
 }
 
@@ -61,35 +62,6 @@ fn prompt_acceptance() -> bool {
     io::stdin().read_line(&mut input).unwrap();
 
     input.trim().eq_ignore_ascii_case("yes")
-}
-
-/// Detect OS using Rust cfg macros
-fn detect_os() -> String {
-    if cfg!(target_os = "linux") {
-        "linux".into()
-    } else if cfg!(target_os = "windows") {
-        "windows".into()
-    } else if cfg!(target_os = "macos") {
-        "macos".into()
-    } else {
-        "unknown".into()
-    }
-}
-
-fn check_icmp_support() -> bool {
-    true
-}
-
-fn check_trace_support() -> bool {
-    true
-}
-
-fn check_dns_support() -> bool {
-    true
-}
-
-fn check_http_support() -> bool {
-    true
 }
 
 /// Helper for printing Yes/No

@@ -7,6 +7,18 @@
 //
 // Full license text available in LICENSE and EULA.md.
 
-// Utility functions for StaxPing
+pub fn check_icmp_support() -> bool {
+    true // Linux always supports ICMP if permissions allow
+}
 
-// NOTHING TO SEE HERE YET
+pub fn check_trace_support() -> bool {
+    true
+}
+
+pub fn check_dns_support() -> bool {
+    true
+}
+
+pub fn check_http_support() -> bool {
+    true
+}
