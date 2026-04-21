@@ -1,28 +1,22 @@
 [![Website](https://img.shields.io/badge/Website-zford.dev-000000?style=flat-square)](https://zford.dev)
-[![Store](https://img.shields.io/badge/Store-staxdash.com-4CAF50?style=flat-square)](https://staxdash.com)
-[![Ko‑Fi](https://img.shields.io/badge/Support-KoFi-FF5E5B?style=flat-square)](https://ko-fi.com/zforddev)
 [![itch.io](https://img.shields.io/badge/itch.io-StaxPing-FA5C5C?style=flat-square)](https://zforddev.itch.io/staxping)
+[![Ko‑Fi](https://img.shields.io/badge/Support-KoFi-FF5E5B?style=flat-square)](https://ko-fi.com/zforddev)
 
 ---
 
-# **StaxPing**  
-### **a product of StaxDash | life made simple**
+# **StaxPing**
+### **Lightweight, cross‑platform network diagnostics**
 
-StaxPing is a lightweight, cross‑platform network diagnostic tool designed to replace the messy, inconsistent mix of `ping`, `dig`, `traceroute`, and `curl` with one clean, predictable command.
+StaxPing is a clean, predictable replacement for the messy mix of `ping`, `dig`, `traceroute`, and `curl`.
 
-Built in Rust for speed, safety, and portability — StaxPing provides a unified view of DNS resolution, ICMP latency, HTTP health, and optional hop‑by‑hop routing, all with clean, consistent output.
-
----
-
-> This project has been flagged for a major upgrade — the potential here is huge, and it’s getting priority attention.
-> — ZFordDev
+Built in Rust for speed, safety, and portability — StaxPing provides a unified view of DNS resolution, ICMP latency, HTTP health, and optional hop‑by‑hop routing, all with consistent, readable output.
 
 ---
 
 ## **Features**
 
 - **DNS Resolution**  
-  Fast, clean lookup with IPv4/IPv6 results and timing.
+  Fast lookup with IPv4/IPv6 results and timing.
 
 - **ICMP Ping**  
   Min/avg/max latency, packet loss, and jitter‑friendly timing.
@@ -36,7 +30,7 @@ Built in Rust for speed, safety, and portability — StaxPing provides a unified
 - **First‑Run Setup**  
   - EULA acceptance  
   - OS detection  
-  - Capability checks (DNS, ICMP, HTTP, traceroute)  
+  - Capability checks  
   - Config stored in the user’s home directory  
 
 After the first run, StaxPing works instantly with no prompts.
@@ -47,31 +41,31 @@ After the first run, StaxPing works instantly with no prompts.
 
 Basic connectivity check:
 
-```
+```bash
 staxping google.com
 ```
 
 Include traceroute:
 
-```
+```bash
 staxping google.com --trace
 ```
 
-Advanced mode (reserved for future features):
+Advanced mode (reserved for future expansion):
 
-```
+```bash
 staxping google.com --advanced
 ```
 
 Help:
 
-```
+```bash
 staxping --help
 ```
 
 ---
 
-## **Mock**
+## **Example Output**
 
 ```bash
 ~ ❯ staxping example.com
@@ -96,9 +90,9 @@ staxping --help
 === HTTP ==============================
   Status:      200
   Time:        380 ms
-   Final URL:   https://example.com/
-   
+  Final URL:   https://example.com/
 ```
+
 ---
 
 ## **Installation**
@@ -106,17 +100,14 @@ staxping --help
 ### **Linux (Primary Target)**  
 A `.deb` package is available for Debian/Ubuntu‑based systems.
 
-Download the latest release:
-
-```
+```bash
 wget https://github.com/ZFordDev/StaxPing/releases/download/V0.1.0/staxping_0.1.0_amd64.deb
 sudo dpkg -i staxping_0.1.0_amd64.deb
 ```
 
-APT repository support is planned for a future milestone.
-
-### **Windows (Secondary Target)**  
-A standalone `.exe` will be provided once Linux packaging is fully stabilized.
+### **Windows**  
+A standalone `.exe` is available in the releases section.  
+PATH handling has been fixed for smoother setup.
 
 ---
 
@@ -157,23 +148,19 @@ After that, StaxPing runs without prompts.
 
 ## **Project Status**
 
-StaxPing is currently in **active development**.  
-The current milestone includes:
+StaxPing is **stable and maintained**.  
+The current release includes:
 
 - First‑run logic  
 - Config system  
 - Capability detection  
 - DNS, ICMP, and HTTP modules  
-- Optional traceroute with clean fallback messaging  
-- Polished, aligned CLI output  
-- Linux `.deb` packaging for amd64  
+- Optional traceroute  
+- Polished CLI output  
+- Linux `.deb` packaging  
+- Windows `.exe` with PATH support  
 
-Future milestones will introduce:
-
-- Advanced flags  
-- Extended diagnostics  
-- APT repository support  
-- Windows `.exe` distribution  
+Future updates will be incremental and based on community needs.
 
 ---
 
@@ -182,26 +169,17 @@ Future milestones will introduce:
 StaxPing is **source‑available and noncommercial**.  
 You may view, modify, and redistribute the source code for personal or internal use.
 
-Commercial use of any kind requires explicit written permission from StaxDash.
+Commercial use requires explicit written permission.
 
 See `LICENSE` and `EULA.txt` for full terms.
 
 ---
 
-## **Part of the StaxDash Tool Suite**
-
----
-
 ## Explore More
 
-[**zford.dev**](https://zford.dev) — the projects that shape the platform.  
-Not everything makes the cut, but everything matters.
-
-[**staxdash.com**](https://staxdash.com) — the storefront for all tools, big and small.  
-Clean, minimal, purpose‑built utilities.
-
-**Ko‑Fi** — support the work and help fuel the dream:  
+**zford.dev** — projects, tools, and experiments.  
+**itch.io** — downloadable builds and releases.  
+**Ko‑Fi** — support ongoing development:  
 https://ko-fi.com/zforddev
 
 ---
-
