@@ -146,9 +146,31 @@ After that, StaxPing runs without prompts.
 
 ---
 
+# **Roadmap**
+
+StaxPing is evolving into a full network‑health companion.  
+The next major milestone is **v0.2.0**, introducing persistent monitoring and local‑network awareness.
+
+### **v0.2.0 (In Development)**  
+- Local IPv4 detection (e.g., `192.168.0.10`)  
+- Monitor mode — continuous checks with outage detection  
+- HUD mode — always‑on status indicator (green/yellow/red)  
+- Windows DNS performance improvements  
+- UI polish and consistency updates  
+
+### **Future Milestones**  
+- Smart Diagnostics  
+  - Rule‑based suggestions for likely network issues  
+- Dash Mode  
+  - Host + node architecture for multi‑location monitoring  
+- Configurable DNS servers  
+- Exportable logs and summaries  
+
+---
+
 ## **Project Status**
 
-StaxPing is **stable and maintained**.  
+StaxPing is **actively maintained** and growing.  
 The current release includes:
 
 - First‑run logic  
@@ -160,16 +182,27 @@ The current release includes:
 - Linux `.deb` packaging  
 - Windows `.exe` with PATH support  
 
-Future updates will be incremental and based on community needs.
+The next release (0.2.0) focuses on monitoring, HUD mode, and local network awareness.
 
 ---
 
 ## **License**
 
 StaxPing is **source‑available and noncommercial**.  
-You may view, modify, and redistribute the source code for personal or internal use.
+You’re free to view, study, modify, and redistribute the source code for personal or internal use.
 
 Commercial use requires explicit written permission.
+
+### Why the EULA Exists  
+StaxPing includes a simple first‑run EULA — not as a barrier, but as part of the project’s learning and design goals.  
+It demonstrates how to:
+
+- present a license agreement on first launch  
+- store user acceptance in a config file  
+- build a clean, professional onboarding flow  
+
+The EULA does **not** restrict features or limit general use.  
+StaxPing will remain fully available, feature‑rich, and free for the community.
 
 See `LICENSE` and `EULA.txt` for full terms.
 
