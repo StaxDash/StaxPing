@@ -38,7 +38,7 @@ fn kv(label: &str, value: impl std::fmt::Display) {
 #[derive(Parser, Debug)]
 #[command(
     name = "StaxPing",
-    version = "0.1.0",
+    version = "0.1.1",
     about = "A clean, unified network diagnostic tool by StaxDash.",
     long_about = "StaxPing performs DNS lookup, ICMP ping, HTTP checks, and optional traceroute.\n\
 It provides a clean, unified interface for quick network diagnostics.",
@@ -108,7 +108,7 @@ async fn main() {
 
     // Top-level banner
     println!("========================================");
-    println!("  StaxPing v0.1.0 — Network Diagnostics");
+    println!("  StaxPing v0.1.1 — Network Diagnostics");
     println!("  Target: {}", target);
     println!("========================================\n");
 
