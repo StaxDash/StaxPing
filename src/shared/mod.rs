@@ -10,3 +10,4 @@
 pub mod config;
 pub mod first_run;
 pub mod http;
+pub mod localnet;

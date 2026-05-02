@@ -24,6 +24,8 @@ use windows as platform;
 use shared::config::Config;
 use shared::first_run::run_first_run;
 use shared::http;
+use shared::localnet;
+
 
 // --- CLI ---------------------------------------------------------------------
 
@@ -38,7 +40,7 @@ fn kv(label: &str, value: impl std::fmt::Display) {
 #[derive(Parser, Debug)]
 #[command(
     name = "StaxPing",
-    version = "0.1.1",
+    version = "0.2.0",
     about = "A clean, unified network diagnostic tool by StaxDash.",
     long_about = "StaxPing performs DNS lookup, ICMP ping, HTTP checks, and optional traceroute.\n\
 It provides a clean, unified interface for quick network diagnostics.",
@@ -68,6 +70,10 @@ struct Cli {
     /// Advanced mode (future)
     #[arg(short = 'A', long)]
     advanced: bool,
+
+    /// Show local network info
+    #[arg(long)]
+    localnet: bool,
 }
 
 // --- Main --------------------------------------------------------------------
@@ -93,6 +99,22 @@ async fn main() {
     // Parse CLI arguments
     let cli = Cli::parse();
 
+    // Handle --localnet mode (skip everything else)
+    if cli.localnet {
+        println!("========================================");
+        println!("  StaxPing v0.2.0 — Local Network Info");
+        println!("========================================\n");
+
+        let local_info = localnet::get_local_info();
+
+        println!("=== Local Network =====================");
+        kv("IPv4:", local_info.ipv4.unwrap_or("unknown".into()));
+        kv("Interface:", local_info.interface.unwrap_or("unknown".into()));
+        kv("Gateway:", local_info.gateway.unwrap_or("unknown".into()));
+
+        return;
+    }
+
     // If no target provided -> show friendly hint
     if cli.target.is_none() {
         println!("StaxPing needs a target to run diagnostics.\n");
@@ -108,7 +130,7 @@ async fn main() {
 
     // Top-level banner
     println!("========================================");
-    println!("  StaxPing v0.1.1 — Network Diagnostics");
+    println!("  StaxPing v0.2.0 — Network Diagnostics");
     println!("  Target: {}", target);
     println!("========================================\n");
 
