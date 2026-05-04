@@ -12,6 +12,7 @@ use std::net::IpAddr;
 use std::time::{Duration, Instant};
 use rand::Rng;
 use tokio::process::Command;
+use tokio::time::timeout;
 
 pub struct PingResult {
     pub sent: u32,
@@ -56,16 +57,16 @@ async fn run_raw_ping(ip: &str) -> Result<PingResult, String> {
         let start = Instant::now();
 
         let payload = b"staxping";
-        let result = pinger.ping(sequence, payload).await;
+        let ping_result = timeout(Duration::from_secs(3), pinger.ping(sequence, payload)).await;
         sequence.0 += 1;
 
-        match result {
-            Ok((_packet, _addr)) => {
+        match ping_result {
+            Ok(Ok((_packet, _addr))) => {
                 received += 1;
                 let elapsed = start.elapsed().as_secs_f64() * 1000.0;
                 times.push(elapsed);
             }
-            Err(_) => {}
+            Ok(Err(_)) | Err(_) => {}
         }
 
         tokio::time::sleep(Duration::from_millis(500)).await;
@@ -75,13 +76,17 @@ async fn run_raw_ping(ip: &str) -> Result<PingResult, String> {
 }
 
 async fn run_fallback_ping(ip: &str) -> Result<PingResult, String> {
-    let output = Command::new("/bin/ping")
-        .arg("-c")
-        .arg("4")
-        .arg(ip)
-        .output()
-        .await
-        .map_err(|e| format!("Failed to run /bin/ping: {}", e))?;
+    let output = timeout(
+        Duration::from_secs(5),
+        Command::new("/bin/ping")
+            .arg("-c")
+            .arg("4")
+            .arg(ip)
+            .output(),
+    )
+    .await
+    .map_err(|_| "Ping command timed out after 5 seconds".to_string())?
+    .map_err(|e| format!("Failed to run /bin/ping: {}", e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
 

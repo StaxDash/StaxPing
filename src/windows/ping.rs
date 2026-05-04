@@ -14,7 +14,9 @@ use windows::Win32::NetworkManagement::IpHelper::{
 use windows::Win32::Foundation::HANDLE;
 use std::ffi::c_void;
 use std::mem::size_of;
-use std::time::Instant;
+use std::time::{Duration, Instant};
+use tokio::task::spawn_blocking;
+use tokio::time::timeout;
 
 pub struct PingResult {
     pub sent: u32,
@@ -40,8 +42,14 @@ pub async fn run_ping(ip: &str) -> Result<PingResult, String> {
 
     for _ in 0..sent {
         let start = Instant::now();
+        let ip_string = ip.to_string();
 
-        match send_single_ping(handle, ip) {
+        let send_future = spawn_blocking(move || send_single_ping(handle, &ip_string));
+        let send_result = timeout(Duration::from_secs(3), send_future).await
+            .map_err(|_| "ICMP ping timed out".to_string())?
+            .map_err(|e| format!("Ping task failed: {}", e))?;
+
+        match send_result {
             Ok(true) => {
                 received += 1;
                 let elapsed = start.elapsed().as_secs_f64() * 1000.0;

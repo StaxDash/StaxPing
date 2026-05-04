@@ -36,11 +36,20 @@ fn kv(label: &str, value: impl std::fmt::Display) {
     println!("  {:<12} {}", label, value);
 }
 
+fn print_error_block(_label: &str, message: &str, debug: bool, raw: Option<&str>) {
+    println!("  ERROR: {}", message);
+    if debug {
+        if let Some(raw_error) = raw {
+            println!("    {}", raw_error);
+        }
+    }
+}
+
 /// CLI argument structure
 #[derive(Parser, Debug)]
 #[command(
     name = "staxping",
-    version = "0.2.1",
+    version = "0.2.2",
     about = "",
     override_usage = "staxping <target> [options]",
     help_template = "USAGE:
@@ -62,6 +71,10 @@ struct Cli {
     /// Run a hop-by-hop traceroute after ping
     #[arg(long)]
     trace: bool,
+
+    /// Show raw diagnostics when an operation fails
+    #[arg(long)]
+    debug: bool,
 
     /// Reserved for future diagnostic features
     #[arg(short = 'A', long)]
@@ -98,7 +111,7 @@ async fn main() {
     // Handle --localnet mode (skip everything else)
     if cli.localnet {
         println!("========================================");
-        println!("  StaxPing v0.2.1 — Local Network Info");
+        println!("  StaxPing v0.2.2 — Local Network Info");
         println!("========================================\n");
 
         let local_info = localnet::get_local_info();
@@ -126,7 +139,7 @@ async fn main() {
 
     // Top-level banner
     println!("========================================");
-    println!("  StaxPing v0.2.1 — Network Diagnostics");
+    println!("  StaxPing v0.2.2 — Network Diagnostics");
     println!("  Target: {}", target);
     println!("========================================\n");
 
@@ -146,7 +159,7 @@ async fn main() {
             result
         }
         Err(e) => {
-            kv("DNS error:", e);
+            print_error_block("DNS", "Lookup failed", cli.debug, Some(&e));
             return;
         }
     };
@@ -175,7 +188,7 @@ async fn main() {
             kv("Max:", format!("{:.2} ms", result.max_ms));
         }
         Err(e) => {
-            kv("Ping error:", e);
+            print_error_block("Ping", "Ping failed", cli.debug, Some(&e));
         }
     }
 
@@ -190,7 +203,7 @@ async fn main() {
             kv("Final URL:", result.final_url);
         }
         Err(e) => {
-            kv("HTTP error:", e);
+            print_error_block("HTTP", "HTTP check failed", cli.debug, Some(&e));
         }
     }
 
@@ -224,7 +237,7 @@ async fn main() {
                 }
             }
             Err(e) => {
-                kv("Trace error:", e);
+                print_error_block("Traceroute", "Traceroute failed", cli.debug, Some(&e));
             }
         }
     }

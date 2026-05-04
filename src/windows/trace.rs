@@ -16,7 +16,9 @@ use windows::Win32::Foundation::HANDLE;
 
 use std::ffi::c_void;
 use std::mem::size_of;
-use std::time::Instant;
+use std::time::{Duration, Instant};
+use tokio::task::spawn_blocking;
+use tokio::time::timeout;
 
 #[derive(Debug, Clone)]
 pub struct TraceHop {
@@ -51,7 +53,10 @@ pub async fn run_trace(target: &str) -> Result<TraceResult, String> {
     let max_hops = 30;
 
     for ttl in 1..=max_hops {
-        let hop = send_trace_hop(handle, dest_ip, ttl)?;
+        let send_future = spawn_blocking(move || send_trace_hop(handle, dest_ip, ttl));
+        let hop = timeout(Duration::from_secs(3), send_future).await
+            .map_err(|_| "Traceroute hop timed out".to_string())?
+            .map_err(|e| format!("Trace task failed: {}", e))??;
 
         hops.push(hop.clone());
 

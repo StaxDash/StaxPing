@@ -33,14 +33,18 @@ pub async fn run_trace(target: &str) -> Result<TraceResult, String> {
         return run_trace_fallback(target).await;
     };
 
-    let output = Command::new(traceroute_path)
-        .arg("-n")
-        .arg("-w")
-        .arg("2")
-        .arg(target)
-        .output()
-        .await
-        .map_err(|e| format!("Failed to run traceroute: {}", e))?;
+    let output = timeout(
+        Duration::from_secs(20),
+        Command::new(traceroute_path)
+            .arg("-n")
+            .arg("-w")
+            .arg("2")
+            .arg(target)
+            .output(),
+    )
+    .await
+    .map_err(|_| "Traceroute command timed out".to_string())?
+    .map_err(|e| format!("Failed to run traceroute: {}", e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
 

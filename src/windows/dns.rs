@@ -9,6 +9,7 @@
 
 // Windows DNS resolver using Win32 API
 
+use tokio::time::{timeout, Duration};
 use trust_dns_resolver::{
     TokioAsyncResolver,
     name_server::{GenericConnector, TokioRuntimeProvider},
@@ -30,20 +31,19 @@ pub async fn resolve_domain(domain: &str) -> Result<DnsResult, String> {
         .map_err(|e| format!("Resolver init failed: {}", e))?;
 
     let start = Instant::now();
+    let dns_timeout = Duration::from_secs(3);
 
     // A records
-    let ipv4_lookup = resolver.ipv4_lookup(domain).await;
-    let ipv4: Vec<String> = match ipv4_lookup {
-        Ok(lookup) => lookup.iter().map(|ip| ip.to_string()).collect(),
-        Err(_) => vec![],
-    };
+    let ipv4_lookup = timeout(dns_timeout, resolver.ipv4_lookup(domain)).await
+        .map_err(|_| "DNS lookup timed out after 3 seconds".to_string())?
+        .map_err(|e| format!("DNS A lookup failed: {}", e))?;
+    let ipv4: Vec<String> = ipv4_lookup.iter().map(|ip| ip.to_string()).collect();
 
     // AAAA records
-    let ipv6_lookup = resolver.ipv6_lookup(domain).await;
-    let ipv6: Vec<String> = match ipv6_lookup {
-        Ok(lookup) => lookup.iter().map(|ip| ip.to_string()).collect(),
-        Err(_) => vec![],
-    };
+    let ipv6_lookup = timeout(dns_timeout, resolver.ipv6_lookup(domain)).await
+        .map_err(|_| "DNS lookup timed out after 3 seconds".to_string())?
+        .map_err(|e| format!("DNS AAAA lookup failed: {}", e))?;
+    let ipv6: Vec<String> = ipv6_lookup.iter().map(|ip| ip.to_string()).collect();
 
     let elapsed = start.elapsed().as_millis();
 

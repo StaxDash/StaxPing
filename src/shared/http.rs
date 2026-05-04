@@ -8,7 +8,7 @@
 // Full license text available in LICENSE and EULA.md.
 
 use reqwest::Client;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 pub struct HttpResult {
     pub status: u16,
@@ -25,6 +25,7 @@ pub async fn check_http(target: &str) -> Result<HttpResult, String> {
 
     let client = Client::builder()
         .redirect(reqwest::redirect::Policy::limited(5))
+        .timeout(Duration::from_secs(5))
         .build()
         .map_err(|e| format!("HTTP client init failed: {}", e))?;
 
