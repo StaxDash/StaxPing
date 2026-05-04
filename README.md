@@ -182,7 +182,7 @@ The current release includes:
 - Linux `.deb` packaging  
 - Windows `.exe` with PATH support  
 
-The next release (0.2.0) focuses on monitoring, HUD mode, and local network awareness.
+The next release (0.3.0) focuses on monitoring, HUD mode, and local network awareness.
 
 ---
 

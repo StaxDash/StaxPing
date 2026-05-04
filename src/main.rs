@@ -39,39 +39,35 @@ fn kv(label: &str, value: impl std::fmt::Display) {
 /// CLI argument structure
 #[derive(Parser, Debug)]
 #[command(
-    name = "StaxPing",
-    version = "0.2.0",
-    about = "A clean, unified network diagnostic tool by StaxDash.",
-    long_about = "StaxPing performs DNS lookup, ICMP ping, HTTP checks, and optional traceroute.\n\
-It provides a clean, unified interface for quick network diagnostics.",
-    override_usage = "staxping [TARGET] [OPTIONS]",
-    help_template = "
-{name} v{version}
-{about}
-
-USAGE:
+    name = "staxping",
+    version = "0.2.1",
+    about = "",
+    override_usage = "staxping <target> [options]",
+    help_template = "USAGE:
   {usage}
 
-ARGS:
-{positionals}
+EXAMPLES:
+  staxping google.com
+  staxping example.com --trace
+  staxping 8.8.8.8
 
 OPTIONS:
 {options}
 "
 )]
 struct Cli {
-    /// The target domain or IP to test
+    /// Target domain or IP address
     target: Option<String>,
 
-    /// Enable traceroute
+    /// Run a hop-by-hop traceroute after ping
     #[arg(long)]
     trace: bool,
 
-    /// Advanced mode (future)
+    /// Reserved for future diagnostic features
     #[arg(short = 'A', long)]
     advanced: bool,
 
-    /// Show local network info
+    /// Display local network information
     #[arg(long)]
     localnet: bool,
 }
@@ -102,7 +98,7 @@ async fn main() {
     // Handle --localnet mode (skip everything else)
     if cli.localnet {
         println!("========================================");
-        println!("  StaxPing v0.2.0 — Local Network Info");
+        println!("  StaxPing v0.2.1 — Local Network Info");
         println!("========================================\n");
 
         let local_info = localnet::get_local_info();
@@ -130,7 +126,7 @@ async fn main() {
 
     // Top-level banner
     println!("========================================");
-    println!("  StaxPing v0.2.0 — Network Diagnostics");
+    println!("  StaxPing v0.2.1 — Network Diagnostics");
     println!("  Target: {}", target);
     println!("========================================\n");
 
