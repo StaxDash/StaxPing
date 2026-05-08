@@ -1,218 +1,118 @@
-[![Website](https://img.shields.io/badge/Website-zford.dev-000000?style=flat-square)](https://zford.dev)
-[![itch.io](https://img.shields.io/badge/itch.io-StaxPing-FA5C5C?style=flat-square)](https://zforddev.itch.io/staxping)
-[![Ko‑Fi](https://img.shields.io/badge/Support-KoFi-FF5E5B?style=flat-square)](https://ko-fi.com/zforddev)
+# **StaxPing Classic — Legacy Network Diagnostics Tool**
+
+<p align="center">
+  <img src="https://img.shields.io/github/v/release/zforddev/staxping?style=for-the-badge&color=78C2AD" alt="Version">
+  <img src="https://img.shields.io/github/license/zforddev/staxping?style=for-the-badge&color=blue" alt="License">
+  <img src="https://img.shields.io/github/stars/zforddev/staxping?style=for-the-badge&color=FFD700" alt="Stars">
+</p>
+
+**StaxPing Classic** is the original version of StaxPing — a lightweight, cross‑platform network diagnostics tool built in Rust.  
+This branch is now preserved as a **legacy edition** while the next‑generation Stax ecosystem is being developed.
+
+The classic version remains available for historical reference, stability, and users who prefer the original workflow.
 
 ---
 
-# **StaxPing**
-### **Lightweight, cross‑platform network diagnostics**
+## 💡 Why This Branch Exists
 
-StaxPing is a clean, predictable replacement for the messy mix of `ping`, `dig`, `traceroute`, and `curl`.
+StaxPing began as a simple, unified replacement for tools like:
 
-Built in Rust for speed, safety, and portability — StaxPing provides a unified view of DNS resolution, ICMP latency, HTTP health, and optional hop‑by‑hop routing, all with consistent, readable output.
+- `ping`  
+- `dig`  
+- `traceroute`  
+- `curl`  
 
----
+It provided a clean, predictable CLI for DNS, ICMP, HTTP, and routing checks — all in one binary.
 
-## **Features**
+As the project grew, StaxPing started expanding into system monitoring, uptime tracking, and resource inspection.  
+To avoid becoming bloated, the project is now being **split into multiple focused tools**:
 
-- **DNS Resolution**  
-  Fast lookup with IPv4/IPv6 results and timing.
+- **StaxPing** — network diagnostics  
+- **StaxSpec** — system specs & resource monitoring  
+- **StaxDash** — unified GUI dashboard (paid convenience layer)
 
-- **ICMP Ping**  
-  Min/avg/max latency, packet loss, and jitter‑friendly timing.
-
-- **HTTP Health Check**  
-  Status code, response time, and final URL after redirects.
-
-- **Optional Traceroute**  
-  Hop‑by‑hop routing with aligned, readable output.
-
-- **First‑Run Setup**  
-  - EULA acceptance  
-  - OS detection  
-  - Capability checks  
-  - Config stored in the user’s home directory  
-
-After the first run, StaxPing works instantly with no prompts.
+This branch preserves the original tool before the ecosystem reboot.
 
 ---
 
-## **Usage**
+## ✨ Philosophy (Classic Edition)
 
-Basic connectivity check:
+The classic version of StaxPing was built on a few core ideas:
 
-```bash
-staxping google.com
-```
+- **Speed & Safety** — Rust‑powered performance  
+- **Predictability** — consistent, readable output  
+- **Cross‑Platform** — Linux, Windows, macOS  
+- **Zero Bloat** — one binary, one job  
+- **Professional Onboarding** — EULA, config, capability checks  
 
-Include traceroute:
-
-```bash
-staxping google.com --trace
-```
-
-Advanced mode (reserved for future expansion):
-
-```bash
-staxping google.com --advanced
-```
-
-Help:
-
-```bash
-staxping --help
-```
+These principles continue in the new ecosystem, but with a cleaner, modular architecture.
 
 ---
 
-## **Example Output**
+## 🛠 Current State (Classic)
 
-```bash
-~ ❯ staxping example.com
-========================================
-  StaxPing v0.1.0 — Network Diagnostics
-  Target: example.com
-========================================
-
-=== DNS ===============================
-  IPv4:        ["93.184.216.34"]
-  IPv6:        ["2606:2800:220:1:248:1893:25c8:1946"]
-  Lookup:      20 ms
-
-=== Ping ==============================
-  Sent:        4
-  Received:    4
-  Loss:        0.0%
-  Min:         20.10 ms
-  Avg:         22.45 ms
-  Max:         24.89 ms
-
-=== HTTP ==============================
-  Status:      200
-  Time:        380 ms
-  Final URL:   https://example.com/
-```
+| Version | Status | Focus |
+|--------|--------|--------|
+| **StaxPing Classic (v0.x)** | `Legacy` | Original all‑in‑one network tool |
+| **StaxPing 2.x** | `In Dev` | Modular rewrite with updater + ecosystem support |
+| **Stax Ecosystem** | `Planned` | StaxPing + StaxSpec + StaxDash |
 
 ---
 
-## **Installation**
+## 🌐 Part of a Larger Ecosystem
 
-### **Linux (Primary Target)**  
-A `.deb` package is available for Debian/Ubuntu‑based systems.
+The classic version was the seed of what is now becoming the **Stax SysAdmin Toolkit** — a suite of small, sharp, local‑first tools with a premium GUI layer.
 
+The new architecture lives on the `main` branch and in separate repos:
+
+- `staxping` (network diagnostics)  
+- `staxspec` (system specs)  
+- `staxdash` (GUI dashboard)  
+- `stax` (central registry + ecosystem docs)
+
+This branch remains frozen as a reference point.
+
+---
+
+## 🚀 Installation (Classic)
+
+### Linux (.deb)
 ```bash
 wget https://github.com/ZFordDev/StaxPing/releases/download/V0.1.0/staxping_0.1.0_amd64.deb
 sudo dpkg -i staxping_0.1.0_amd64.deb
 ```
 
-### **Windows**  
-A standalone `.exe` is available in the releases section.  
-PATH handling has been fixed for smoother setup.
+### Windows (.exe)
+Download from the Releases page.  
+PATH handling is automatic on first run.
 
 ---
 
-## **Config & First‑Run Behavior**
+## 📖 Documentation & Links
 
-On first run, StaxPing will:
+**Classic Resources:**
+- `config.json` (first‑run setup)
+- DNS, ICMP, HTTP, traceroute modules
+- EULA onboarding flow
 
-1. Display the EULA  
-2. Detect your OS  
-3. Check system capabilities  
-4. Store a small config file:
-
-Linux:
-```
-$HOME/.config/staxping/config.json
-```
-
-Windows:
-```
-%APPDATA%\StaxPing\config.json
-```
-
-After that, StaxPing runs without prompts.
+**New Ecosystem:**
+- StaxPing 2.x (main branch)
+- StaxSpec (system monitoring)
+- StaxDash (GUI dashboard)
+- Central registry (`stax.toml`)
 
 ---
 
-## **Built With**
+## 👥 Credits
 
-- **Rust** — safety, speed, portability  
-- `trust-dns-resolver` — DNS resolution  
-- `surge-ping` — ICMP ping  
-- `reqwest` — HTTP checks  
-- `tracert` — traceroute  
-- `clap` — CLI argument parsing  
-- `serde` — config handling  
+Created and maintained by **ZFordDev**.  
+Thanks to early users who shaped the original tool and inspired the ecosystem reboot.
 
 ---
 
-# **Roadmap**
+## ❤️ Support the Project
 
-StaxPing is evolving into a full network‑health companion.  
-The next major milestone is **v0.2.0**, introducing persistent monitoring and local‑network awareness.
+If StaxPing Classic helped you diagnose a network issue or learn Rust CLI design:
 
-### **v0.2.0 (In Development)**  
-- Local IPv4 detection (e.g., `192.168.0.10`)  
-- Monitor mode — continuous checks with outage detection  
-- HUD mode — always‑on status indicator (green/yellow/red)  
-- Windows DNS performance improvements  
-- UI polish and consistency updates  
-
-### **Future Milestones**  
-- Smart Diagnostics  
-  - Rule‑based suggestions for likely network issues  
-- Dash Mode  
-  - Host + node architecture for multi‑location monitoring  
-- Configurable DNS servers  
-- Exportable logs and summaries  
-
----
-
-## **Project Status**
-
-StaxPing is **actively maintained** and growing.  
-The current release includes:
-
-- First‑run logic  
-- Config system  
-- Capability detection  
-- DNS, ICMP, and HTTP modules  
-- Optional traceroute  
-- Polished CLI output  
-- Linux `.deb` packaging  
-- Windows `.exe` with PATH support  
-
-The next release (0.3.0) focuses on monitoring, HUD mode, and local network awareness.
-
----
-
-## **License**
-
-StaxPing is **source‑available and noncommercial**.  
-You’re free to view, study, modify, and redistribute the source code for personal or internal use.
-
-Commercial use requires explicit written permission.
-
-### Why the EULA Exists  
-StaxPing includes a simple first‑run EULA — not as a barrier, but as part of the project’s learning and design goals.  
-It demonstrates how to:
-
-- present a license agreement on first launch  
-- store user acceptance in a config file  
-- build a clean, professional onboarding flow  
-
-The EULA does **not** restrict features or limit general use.  
-StaxPing will remain fully available, feature‑rich, and free for the community.
-
-See `LICENSE` and `EULA.txt` for full terms.
-
----
-
-## Explore More
-
-**zford.dev** — projects, tools, and experiments.  
-**itch.io** — downloadable builds and releases.  
-**Ko‑Fi** — support ongoing development:  
-https://ko-fi.com/zforddev
-
----
+- ⭐ **Star the repo** to help others discover it  
+- ☕ **Support on Ko‑Fi**: [https://ko-fi.com/zforddev](https://ko-fi.com/zforddev)  
