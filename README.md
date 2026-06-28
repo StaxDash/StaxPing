@@ -1,4 +1,4 @@
-# **StaxPing 2.x — Network Diagnostics, Reimagined**
+# **StaxPing Classic — Legacy Network Diagnostics Tool**
 
 <p align="center">
   <img src="https://img.shields.io/github/v/release/zforddev/staxping?style=for-the-badge&color=78C2AD" alt="Version">
@@ -6,147 +6,113 @@
   <img src="https://img.shields.io/github/stars/zforddev/staxping?style=for-the-badge&color=FFD700" alt="Stars">
 </p>
 
-StaxPing is entering its next chapter — rebuilt from the ground up as part of a **modular, modern sysadmin toolkit**.  
-This branch represents the **new StaxPing 2.x foundation**, focused on clarity, modularity, and long‑term maintainability.
+**StaxPing Classic** is the original version of StaxPing — a lightweight, cross‑platform network diagnostics tool built in Rust.  
+This branch is now preserved as a **legacy edition** while the next‑generation Stax ecosystem is being developed.
 
-The original version of StaxPing is now preserved on the `classic` branch.
+The classic version remains available for historical reference, stability, and users who prefer the original workflow.
 
 ---
 
-## 💡 Why StaxPing Is Being Rebuilt
+## 💡 Why This Branch Exists
 
-The original StaxPing grew quickly — DNS, ICMP, HTTP, traceroute, monitoring ideas, system info, uptime checks.  
-It was becoming powerful, but also **too broad for a single binary**.
+StaxPing began as a simple, unified replacement for tools like:
 
-To avoid bloat and to support real sysadmin workflows, StaxPing is now part of a **three‑tool ecosystem**:
+- `ping`  
+- `dig`  
+- `traceroute`  
+- `curl`  
+
+It provided a clean, predictable CLI for DNS, ICMP, HTTP, and routing checks — all in one binary.
+
+As the project grew, StaxPing started expanding into system monitoring, uptime tracking, and resource inspection.  
+To avoid becoming bloated, the project is now being **split into multiple focused tools**:
 
 - **StaxPing** — network diagnostics  
 - **StaxSpec** — system specs & resource monitoring  
 - **StaxDash** — unified GUI dashboard (paid convenience layer)
 
-Each tool is focused, fast, and built for reliability.  
-Together, they form a clean, cohesive toolkit.
+This branch preserves the original tool before the ecosystem reboot.
 
 ---
 
-## ✨ Philosophy
+## ✨ Philosophy (Classic Edition)
 
-The Stax 2.x ecosystem is built on a few core principles:
+The classic version of StaxPing was built on a few core ideas:
 
-- **Local‑first** — everything runs on your machine  
-- **Zero bloat** — each tool does one job extremely well  
-- **Predictable updates** — atomic installs, safe rollback  
-- **Cross‑platform** — Linux, Windows, macOS  
-- **No feature gating** — CLI tools stay fully free  
-- **Paid tier = convenience** — StaxDash adds dashboards, not restrictions  
+- **Speed & Safety** — Rust‑powered performance  
+- **Predictability** — consistent, readable output  
+- **Cross‑Platform** — Linux, Windows, macOS  
+- **Zero Bloat** — one binary, one job  
+- **Professional Onboarding** — EULA, config, capability checks  
 
-This reboot is about building a **professional‑grade foundation** that can grow for years.
-
----
-
-## 🛠 Current State
-
-| Component | Status | Focus |
-|----------|--------|--------|
-| **StaxPing Classic** | `Legacy` | Original all‑in‑one tool (see `classic` branch) |
-| **StaxPing 2.x** | `In Dev` | Clean rewrite with modular architecture |
-| **StaxSpec** | `Planned` | System specs & resource monitoring |
-| **StaxDash** | `Planned` | Unified GUI dashboard (paid convenience layer) |
-| **Stax Registry** | `In Dev` | Central `stax.toml` for tool installs/updates |
+These principles continue in the new ecosystem, but with a cleaner, modular architecture.
 
 ---
 
-## 🌐 Part of the Stax Ecosystem
+## 🛠 Current State (Classic)
 
-StaxPing 2.x is no longer a standalone binary — it’s the **network module** in a larger sysadmin suite.
+| Version | Status | Focus |
+|--------|--------|--------|
+| **StaxPing Classic (v0.x)** | `Legacy` | Original all‑in‑one network tool |
+| **StaxPing 2.x** | `In Dev` | Modular rewrite with updater + ecosystem support |
+| **Stax Ecosystem** | `Planned` | StaxPing + StaxSpec + StaxDash |
 
-The ecosystem includes:
+---
 
-- a **shared installer/updater**  
-- a **central registry (`stax.toml`)**  
-- a **consistent folder structure**  
-- **atomic updates**  
-- **rollback support**  
-- **tool discovery & installation**  
+## 🌐 Part of a Larger Ecosystem
 
-Example (planned):
+The classic version was the seed of what is now becoming the **Stax SysAdmin Toolkit** — a suite of small, sharp, local‑first tools with a premium GUI layer.
 
-```
-staxping tools list
-staxping tools install staxspec
-staxping tools update --all
+The new architecture lives on the `main` branch and in separate repos:
+
+- `staxping` (network diagnostics)  
+- `staxspec` (system specs)  
+- `staxdash` (GUI dashboard)  
+- `stax` (central registry + ecosystem docs)
+
+This branch remains frozen as a reference point.
+
+---
+
+## 🚀 Installation (Classic)
+
+### Linux (.deb)
+```bash
+wget https://github.com/ZFordDev/StaxPing/releases/download/V0.1.0/staxping_0.1.0_amd64.deb
+sudo dpkg -i staxping_0.1.0_amd64.deb
 ```
 
-StaxPing becomes the **gateway tool** for the entire suite.
-
----
-
-## 🚀 Installation (Coming Soon)
-
-StaxPing 2.x will support:
-
-- one‑command installation  
-- automatic PATH setup  
-- atomic updates  
-- rollback to previous versions  
-- multi‑tool installation via the Stax registry  
-
-More details will be added as the new architecture lands.
+### Windows (.exe)
+Download from the Releases page.  
+PATH handling is automatic on first run.
 
 ---
 
 ## 📖 Documentation & Links
 
-**Classic Version:**  
-See the `classic` branch for the original StaxPing.
+**Classic Resources:**
+- `config.json` (first‑run setup)
+- DNS, ICMP, HTTP, traceroute modules
+- EULA onboarding flow
 
-**Ecosystem Docs:**  
-Will be published alongside the Stax registry and StaxSpec.
-
----
-
-## 🧭 Roadmap (StaxPing 2.x)
-
-### **Phase 1 — Foundation**
-- New repo structure  
-- New README  
-- Stax registry (`stax.toml`)  
-- Installer/updater design  
-- Folder layout (`~/.stax/…`)  
-
-### **Phase 2 — Updater**
-- Download + install  
-- Atomic swap  
-- Rollback  
-- Tool discovery  
-- Tool installation  
-
-### **Phase 3 — StaxPing Core**
-- DNS  
-- ICMP  
-- HTTP  
-- Traceroute  
-- JSON output  
-
-### **Phase 4 — Ecosystem Integration**
-- StaxSpec support  
-- StaxDash integration  
-- Multi‑tool workflows  
+**New Ecosystem:**
+- StaxPing 2.x (main branch)
+- StaxSpec (system monitoring)
+- StaxDash (GUI dashboard)
+- Central registry (`stax.toml`)
 
 ---
 
 ## 👥 Credits
 
 Created and maintained by **ZFordDev**.  
-StaxPing 2.x is built with the lessons learned from the classic version and the vision for a clean, modular sysadmin toolkit.
+Thanks to early users who shaped the original tool and inspired the ecosystem reboot.
 
 ---
 
 ## ❤️ Support the Project
 
-If you want to support the development of the new Stax ecosystem:
+If StaxPing Classic helped you diagnose a network issue or learn Rust CLI design:
 
-- ⭐ **Star the repo**  
-- ☕ **Ko‑Fi**: [https://ko-fi.com/zforddev](https://ko-fi.com/zforddev)  
-
----
+- ⭐ **Star the repo** to help others discover it  
+- ☕ **Support on Ko‑Fi**: [https://ko-fi.com/zforddev](https://ko-fi.com/zforddev)  
