@@ -1,16 +1,14 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
-
-  <!-- Background -->
-  <rect width="256" height="256" rx="24" fill="#1e1e1e"/>
-
-  <!-- Terminal-style text -->
-  <text x="50%" y="55%" 
-        font-family="monospace" 
-        font-size="96" 
-        fill="#4afc8f" 
-        text-anchor="middle" 
-        dominant-baseline="middle">
-    &gt;SP
-  </text>
-
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2a2a2a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f0f0f;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="50" fill="url(#bg)"/>
+  <!-- Decorative "Glow" -->
+  <circle cx="128" cy="128" r="80" fill="#4afc8f" opacity="0.1" filter="blur(20px)"/>
+  <!-- Modern S/P Hybrid -->
+  <path d="M80 80 L110 128 L80 176 M130 80 L170 80 C190 80 190 110 170 110 L130 110 L130 176" 
+        stroke="#4afc8f" stroke-width="24" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
